@@ -126,6 +126,58 @@ app.post("/users", (req, res) => {
     res.status(201).json(newUser);
 });
 
+// DELETE /user/:id
+app.delete("/users/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const index = users.findIndex(u => u.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: "User not found" });
+    }
+    const deletedUser = users.splice(index, 1)[0];
+    res.json(deletedUser);
+});
+
+// PUT /user/:id to update a user
+// PUT = usually “replace whole object” (require all fields and overwrite them)
+// PATCH = “partial update”
+app.put("/users/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const user = users.find(u => u.id === id);
+    if (!user) {
+        return res.status(404).json({ error: "User not found" });
+    }
+    const { name, email, role } = req.body;
+    if (!name || !email || !role) {
+        return res.status(400).json({ error: "name, email, and role are required" });
+    }
+    user.name = name;
+    user.email = email;
+    user.role = role;
+    // Why this update in users object
+    // ANS: 'find' returns a reference to the object inside that array, not a copy
+    res.json(user);
+});
+
+app.patch("/users/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const user = users.find(u => u.id === id);
+    if (!user) {
+        return res.status(404).json({ error: "User not found" });
+    }
+    const { name, email, role } = req.body;
+
+    if (!name && !email && !role) {
+        return res.status(400).json({ error: "name or email or role are required" });
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+    // Why this update in users object
+    // ANS: 'find' returns a reference to the object inside that array, not a copy
+    res.json(user);
+});
+
 
 // =============================================
 // Products routes
@@ -133,12 +185,12 @@ app.post("/users", (req, res) => {
 
 // GET /products
 // Return all products
-app.get("/products", (req, res) => {
-    res.json({
-        count: products.length,
-        products
-    });
-});
+// app.get("/products", (req, res) => {
+//     res.json({
+//         count: products.length,
+//         products
+//     });
+// });
 
 // GET /products/:id
 app.get("/products/:id", (req, res) => {
@@ -150,6 +202,28 @@ app.get("/products/:id", (req, res) => {
     }
 
     res.json(product);
+});
+
+// GET /products/?minPrice=&maxPrice=
+app.get("/products", (req, res) => {
+    console.log("Query params:", req.query);
+    const min = req.query.minPrice ? Number(req.query.minPrice) : NaN;
+    const max = req.query.maxPrice ? Number(req.query.maxPrice) : NaN;
+
+    const minPrice = Number.isNaN(min) ? 0 : min;
+    const maxPrice = Number.isNaN(max) ? Infinity : max;
+
+    let result = products.filter(p => p.price >= minPrice && p.price <= maxPrice);
+    if (result.length === 0) {
+        return res.json({
+            count: 0,
+            products: []
+        });
+    }
+    res.json({
+        count: result.length,
+        products: result
+    });
 });
 
 
@@ -164,5 +238,7 @@ app.listen(PORT, () => {
     console.log(`GET  http://localhost:${PORT}/users`);
     console.log(`GET  http://localhost:${PORT}/users/1`);
     console.log(`GET  http://localhost:${PORT}/users/?role=user`);
-    console.log(`GET  http://localhost:${PORT}/products\n`);
+    console.log(`GET  http://localhost:${PORT}/products`);
+    console.log(`GET  http://localhost:3000/products?minPrice=700&maxPrice=1000`);
+    console.log('And more in Test_Collection.postman_collection \n');
 });
