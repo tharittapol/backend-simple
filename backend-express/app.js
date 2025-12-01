@@ -12,6 +12,7 @@ require("dotenv").config();
 const express = require("express");
 const logger = require("./middleware/logger");
 const errorHandler = require("./middleware/errorHandler");
+const authApiKey = require("./middleware/authApiKey");
 const usersRouter = require("./routes/users");
 
 const app = express();
@@ -37,9 +38,12 @@ app.get("/", (req, res) => {
     });
 });
 
-// Mount users routes under /users
-// So /users, /users/:id, etc. are handled in routes/users.js
-app.use("/users", usersRouter);
+// // Mount users routes under /users
+// // So /users, /users/:id, etc. are handled in routes/users.js
+// app.use("/users", usersRouter);
+
+// protect ALL /users routes
+app.use("/users", authApiKey, usersRouter);
 
 // 404 handler for all other routes (if no route matched above)
 app.use((req, res, next) => {

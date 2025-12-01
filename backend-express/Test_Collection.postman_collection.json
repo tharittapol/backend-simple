@@ -89,10 +89,31 @@
 			"response": []
 		},
 		{
-			"name": "http://localhost:3000/users",
+			"name": "http://localhost:3000/users X-API-KEY",
 			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "key",
+							"value": "X-API-KEY",
+							"type": "string"
+						},
+						{
+							"key": "value",
+							"value": "bigkysecret123",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "bigkysecret123",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "http://localhost:3000/users",
 					"protocol": "http",
