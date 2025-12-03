@@ -19,10 +19,10 @@ app.get("/", (req: Request, res: Response) => {
         routes: [
             "POST /auth/register",
             "POST /auth/login",
-            "GET  /users/me",
-            "GET  /users",
-            "GET  /tasks",
-            "POST /tasks",
+            "GET  /users/me     (requires JWT)",
+            "GET  /users        (requires JWT)",
+            "GET  /tasks        (requires JWT)",
+            "POST /tasks        (requires JWT)",
         ],
     });
 });
