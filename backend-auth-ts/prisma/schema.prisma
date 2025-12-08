@@ -1,0 +1,36 @@
+// ------------------------------------------------------
+// Prisma schema for backend-auth-ts
+// - Define models: User, Task
+// ------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User corresponds to existing TS User model
+model User {
+  id           Int      @id @default(autoincrement()) // SERIAL-like PK
+  email        String   @unique                      // unique email
+  passwordHash String                               // hashed password (bcrypt)
+  name         String?                              // nullable name
+  createdAt    DateTime @default(now())             // created timestamp
+
+  // Relation: one user has many tasks
+  tasks        Task[]
+}
+
+// Task corresponds to existing TS Task model
+model Task {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relation: many tasks belong to one user
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
