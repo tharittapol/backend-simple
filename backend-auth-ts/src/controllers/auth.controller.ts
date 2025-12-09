@@ -1,6 +1,9 @@
-// ----------------------------------------
-// Auth: register & login
-// ----------------------------------------
+// ------------------------------------------------------
+// Auth controller: register + login
+// - Uses Prisma-based user model
+// - Hashes password with bcrypt
+// - Issues JWT on successful login
+// ------------------------------------------------------
 
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
@@ -19,29 +22,34 @@ export async function register(
     next: NextFunction
 ): Promise<void> {
     try {
+        // Extract body with explicit typing
         const { email, password, name } = req.body as {
             email?: string;
             password?: string;
             name?: string;
         };
 
+        // Basic validation
         if (!email || !password) {
             const err = new Error("email and password are required") as any;
             err.statusCode = 400;
             return next(err);
         }
 
-        const existing = findUserByEmail(email);
+        // Check if email already exists in DB
+        const existing = await findUserByEmail(email);
         if (existing) {
-            const err = new Error("Email already registered") as any;
-            err.statusCode = 409;
-            return next(err);
+        const err = new Error('Email already registered') as any;
+        err.statusCode = 409;
+        return next(err);
         }
 
+        // Hash password with bcrypt
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        const user = createUser({ email, passwordHash, name });
+        // Create user in PostgreSQL via Prisma
+        const user = await createUser({ email, passwordHash, name });
 
         res.status(201).json({
             id: user.id,
@@ -71,11 +79,12 @@ export async function login(
             return next(err);
         }
 
-        const user = findUserByEmail(email);
+        // Look up user in DB
+        const user = await findUserByEmail(email);
         if (!user) {
-            const err = new Error("Invalid email or password") as any;
-            err.statusCode = 401;
-            return next(err);
+        const err = new Error('Invalid email or password') as any;
+        err.statusCode = 401;
+        return next(err);
         }
 
         const match = await bcrypt.compare(password, user.passwordHash);
@@ -101,7 +110,7 @@ export async function login(
         // Tell TypeScript the exact types:
         const secret: Secret = secretEnv;
         const signOptions: SignOptions = {
-            expiresIn: expiresInEnv as any, // runtime accepts "1h"
+            expiresIn: expiresInEnv as any, // `as any` to bypass overly strict type definition
         };
 
         // Now TS knows: (payload, secret: Secret, options: SignOptions)

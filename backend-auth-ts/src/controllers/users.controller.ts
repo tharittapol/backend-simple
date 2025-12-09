@@ -10,11 +10,11 @@ import {
 } from "../models/users.model";
 
 // GET /users/me
-export function getMe(
+export async function getMe(
     req: AuthRequest,
     res: Response,
     next: NextFunction
-): void {
+): Promise<void> {
     try {
         if (!req.user) {
             const err = new Error("Unauthorized") as any;
@@ -23,7 +23,7 @@ export function getMe(
         }
 
         const userId = req.user.id;
-        const user = findUserById(userId);
+        const user = await findUserById(userId);
 
         if (!user) {
             const err = new Error("User not found") as any;
@@ -42,13 +42,14 @@ export function getMe(
 }
 
 // GET /users
-export function listUsers(
+export async function listUsers(
     req: AuthRequest,
     res: Response,
     next: NextFunction
-): void {
+): Promise<void> {
     try {
-        const users = getAllUsers();
+        const users = await getAllUsers();
+        // For demo we return full users
         res.json({
             count: users.length,
             users,

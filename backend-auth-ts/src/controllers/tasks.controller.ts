@@ -1,6 +1,8 @@
-// ----------------------------------------
+// ------------------------------------------------------
 // Tasks controller
-// ----------------------------------------
+// - GET /tasks   → list tasks of current user
+// - POST /tasks  → create task for current user
+// ------------------------------------------------------
 
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../types/auth";
@@ -10,11 +12,11 @@ import {
 } from "../models/tasks.model";
 
 // GET /tasks
-export function listMyTasks(
+export async function listMyTasks(
     req: AuthRequest,
     res: Response,
     next: NextFunction
-): void {
+): Promise<void> {
     try {
         if (!req.user) {
             const err = new Error("Unauthorized") as any;
@@ -23,7 +25,7 @@ export function listMyTasks(
         }
 
         const userId = req.user.id;
-        const tasks = getTasksByUserId(userId);
+        const tasks = await getTasksByUserId(userId);
 
         res.json({
             count: tasks.length,
@@ -35,11 +37,11 @@ export function listMyTasks(
 }
 
 // POST /tasks
-export function createMyTask(
+export async function createMyTask(
     req: AuthRequest,
     res: Response,
     next: NextFunction
-): void {
+): Promise<void> {
     try {
         if (!req.user) {
             const err = new Error("Unauthorized") as any;
@@ -56,7 +58,7 @@ export function createMyTask(
         }
 
         const userId = req.user.id;
-        const task = createTask({ userId, title });
+        const task = await createTask({ userId, title });
 
         res.status(201).json(task);
     } catch (e) {

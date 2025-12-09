@@ -11,10 +11,10 @@ export default defineConfig({
   // Path to Prisma schema file
   schema: 'prisma/schema.prisma',
 
-  // Optional: customize migrations path (default is prisma/migrations)
-  // migrations: {
-  //   path: 'prisma/migrations',
-  // },
+  // customize migrations path
+  migrations: {
+    path: 'prisma/migrations',
+  },
 
   // Datasource configuration for CLI (migrate, studio, etc.)
   datasource: {
